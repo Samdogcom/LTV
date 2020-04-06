@@ -5,7 +5,7 @@ android {
     buildToolsVersion "29.0.3"
 
     defaultConfig {
-        applicationId "com.fongmi.android.ltv"
+        applicationId "com.fongmi.android.wtv"
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 22
@@ -28,7 +28,7 @@ android {
 
     android.applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            outputFileName = "ltv.apk"
+            outputFileName = "wtv.apk"
         }
     }
 }
