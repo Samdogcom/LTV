@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.fongmi.android.ltv.utils.Prefers;
@@ -20,6 +21,7 @@ public class Channel extends Bean {
 	private String name;
 	private String logo;
 	private String url;
+	private String provider;
 	private boolean token;
 	private boolean hidden;
 	private boolean dynamic;
@@ -32,6 +34,7 @@ public class Channel extends Bean {
 		this("");
 	}
 
+	@Ignore
 	public Channel(@NonNull String number) {
 		this.number = number;
 	}
@@ -67,6 +70,14 @@ public class Channel extends Bean {
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	public String getProvider() {
+		return TextUtils.isEmpty(provider) ? Token.getProvider() : provider;
+	}
+
+	public void setProvider(String provider) {
+		this.provider = provider;
 	}
 
 	public boolean isToken() {
@@ -110,6 +121,7 @@ public class Channel extends Bean {
 		item.setToken(isToken());
 		item.setHidden(isHidden());
 		item.setDynamic(isDynamic());
+		item.setProvider(getProvider());
 		return item;
 	}
 
