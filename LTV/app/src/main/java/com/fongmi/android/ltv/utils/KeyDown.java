@@ -21,6 +21,7 @@ public class KeyDown {
 	private ViewGroup mInfo;
 	private TextView mNumber;
 	private TextView mName;
+	private boolean mPress;
 
 	public KeyDown(KeyDownImpl keyDown, ViewGroup info, TextView number, TextView name) {
 		this.mKeyDown = keyDown;
@@ -50,22 +51,32 @@ public class KeyDown {
 	}
 
 	public boolean onKeyDown(KeyEvent event) {
-		if (Utils.isUpKey(event)) {
+		if (event.getAction() == KeyEvent.ACTION_DOWN && Utils.isUpKey(event)) {
 			mKeyDown.onKeyVertical(Prefers.isRev());
-		} else if (Utils.isDownKey(event)) {
+		} else if (event.getAction() == KeyEvent.ACTION_DOWN && Utils.isDownKey(event)) {
 			mKeyDown.onKeyVertical(!Prefers.isRev());
-		} else if (Utils.isLeftKey(event)) {
+		} else if (event.getAction() == KeyEvent.ACTION_UP && Utils.isLeftKey(event)) {
 			mKeyDown.onKeyHorizontal(true);
-		} else if (Utils.isRightKey(event)) {
+		} else if (event.getAction() == KeyEvent.ACTION_UP && Utils.isRightKey(event)) {
 			mKeyDown.onKeyHorizontal(false);
-		} else if (Utils.isMenuKey(event)) {
-			mKeyDown.onKeyCenter(true);
-		} else if (Utils.isEnterKey(event)) {
-			mKeyDown.onKeyCenter(event.isLongPress());
-		} else if (Utils.isBackKey(event)) {
+		} else if (event.getAction() == KeyEvent.ACTION_UP && Utils.isBackKey(event)) {
 			mKeyDown.onKeyBack();
+		} else if (event.getAction() == KeyEvent.ACTION_UP && Utils.isMenuKey(event)) {
+			mKeyDown.onLongPress();
+		} else if (Utils.isEnterKey(event)) {
+			checkPress(event);
 		}
 		return true;
+	}
+
+	private void checkPress(KeyEvent event) {
+		if (event.isLongPress()) {
+			mPress = true;
+			mKeyDown.onLongPress();
+		} else if (event.getAction() == KeyEvent.ACTION_UP) {
+			if (mPress) mPress = false;
+			else mKeyDown.onKeyCenter();
+		}
 	}
 
 	private int getDelay() {

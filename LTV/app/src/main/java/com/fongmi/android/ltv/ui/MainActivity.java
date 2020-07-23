@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 	private RecyclerView.OnScrollListener mScrollListener = new RecyclerView.OnScrollListener() {
 		@Override
 		public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-			if (newState == 1) mHandler.removeCallbacks(mRunnable);
+			if (newState == RecyclerView.SCROLL_STATE_DRAGGING) mHandler.removeCallbacks(mRunnable);
 		}
 	};
 
@@ -192,27 +192,24 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 		if (mNoise.getVisibility() == View.VISIBLE) mNoise.setVisibility(View.GONE);
 	}
 
-	private boolean isUiVisible() {
+	private boolean isVisible() {
 		return mRecyclerView.getAlpha() == 1;
 	}
 
-	private boolean isUiGone() {
+	private boolean isGone() {
 		return mRecyclerView.getAlpha() == 0;
 	}
 
 	private void toggleUi() {
-		if (isUiVisible()) hideUi();
-		else showUi();
+		if (isVisible()) hideUi(); else showUi();
 	}
 
 	private void showUi() {
 		Utils.showViews(mRecyclerView, mGear);
-		mHandler.removeCallbacks(mRunnable);
 	}
 
 	private void hideUi() {
 		Utils.hideViews(mRecyclerView, mGear);
-		mHandler.removeCallbacks(mRunnable);
 	}
 
 	private void setCustomSize() {
@@ -241,7 +238,6 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 
 	@OnClick(R.id.gear)
 	public void onGear() {
-		mHandler.removeCallbacks(mRunnable);
 		Notify.showDialog(this);
 	}
 
@@ -273,7 +269,8 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 	@Override
 	public void onKeyVertical(boolean isNext) {
 		mRecyclerView.scrollToPosition(isNext ? mAdapter.onMoveDown() : mAdapter.onMoveUp());
-		if (isUiGone()) showUi();
+		mHandler.removeCallbacks(mRunnable);
+		if (isGone()) showUi();
 	}
 
 	@Override
@@ -283,14 +280,18 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 	}
 
 	@Override
-	public void onKeyCenter(boolean isLongPress) {
-		if (isLongPress) mAdapter.onKeep();
-		else showUi();
+	public void onKeyCenter() {
+		if (isVisible()) mAdapter.setChannel(); else showUi();
 	}
 
 	@Override
 	public void onKeyBack() {
 		onBackPressed();
+	}
+
+	@Override
+	public void onLongPress() {
+		mAdapter.onKeep();
 	}
 
 	@Override
@@ -317,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 
 	@Override
 	public void onBackPressed() {
-		if (isUiVisible()) hideUi();
+		if (isVisible()) hideUi();
 		else super.onBackPressed();
 	}
 }
