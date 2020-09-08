@@ -316,6 +316,7 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 		super.onPause();
 		mAdapter.setVisible(false);
 		mVideoView.stopPlayback();
+		TvBus.get().stop();
 		cancelTimer();
 	}
 
@@ -323,5 +324,12 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 	public void onBackPressed() {
 		if (isVisible()) hideUi();
 		else super.onBackPressed();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		TvBus.get().destroy();
+		System.exit(0);
 	}
 }

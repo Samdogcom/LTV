@@ -1,7 +1,5 @@
 package com.fongmi.android.ltv.utils;
 
-import android.content.Intent;
-
 import com.fongmi.android.ltv.App;
 import com.fongmi.android.ltv.network.AsyncCallback;
 import com.google.gson.Gson;
@@ -13,6 +11,7 @@ import com.tvbus.engine.TVService;
 public class TvBus implements TVListener {
 
 	private AsyncCallback callback;
+	private TVCore tvcore;
 	private String url;
 
 	private static class Loader {
@@ -24,14 +23,26 @@ public class TvBus implements TVListener {
 	}
 
 	public void init() {
-		TVCore.getInstance().setTVListener(this);
-		App.get().startService(new Intent(App.get(), TVService.class));
+		tvcore = TVCore.getInstance();
+		tvcore.setAuthUrl(Token.AUTH_URL);
+		tvcore.setUsername(Token.USERNAME);
+		tvcore.setPassword(Token.PASSWORD);
+		tvcore.setTVListener(this);
+		TVService.start(App.get());
 	}
 
 	public void start(AsyncCallback callback, String url) {
-		TVCore.getInstance().start(url);
 		setCallback(callback);
+		tvcore.start(url);
 		setUrl(url);
+	}
+
+	public void stop() {
+		tvcore.stop();
+	}
+
+	public void destroy() {
+		TVService.stop(App.get());
 	}
 
 	private void setCallback(AsyncCallback callback) {
@@ -49,6 +60,13 @@ public class TvBus implements TVListener {
 	}
 
 	@Override
+	public void onStop(String result) {
+		JsonObject json = new Gson().fromJson(result, JsonObject.class);
+		int errno = json.get("errno").getAsInt();
+		if (errno < 0) tvcore.start(url);
+	}
+
+	@Override
 	public void onInited(String result) {
 	}
 
@@ -58,12 +76,6 @@ public class TvBus implements TVListener {
 
 	@Override
 	public void onInfo(String result) {
-	}
-
-	@Override
-	public void onStop(String result) {
-		JsonObject json = new Gson().fromJson(result, JsonObject.class);
-		if (json.get("errno").getAsString().equals("-120")) TVCore.getInstance().start(url);
 	}
 
 	@Override
