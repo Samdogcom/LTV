@@ -10,8 +10,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.fongmi.android.ltv.App;
 import com.fongmi.android.ltv.AppDatabase;
 import com.fongmi.android.ltv.R;
 import com.fongmi.android.ltv.bean.Bean;
@@ -247,7 +245,6 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 			holder.itemView.setSelected(item.isSelect());
 			holder.name.setTextSize(TypedValue.COMPLEX_UNIT_SP, item.getTextSize());
 			holder.number.setTextSize(TypedValue.COMPLEX_UNIT_SP, item.getTextSize());
-			Glide.with(App.get()).load(item.getLogoUrl()).into(holder.logo);
 		}
 	}
 }
