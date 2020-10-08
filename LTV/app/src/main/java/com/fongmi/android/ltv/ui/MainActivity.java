@@ -16,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.abdularis.app.analogtvnoise.AnalogTvNoise;
 import com.devbrackets.android.exomedia.core.video.scale.ScaleType;
 import com.devbrackets.android.exomedia.ui.widget.VideoView;
 import com.fongmi.android.ltv.R;
@@ -26,7 +25,6 @@ import com.fongmi.android.ltv.impl.KeyDownImpl;
 import com.fongmi.android.ltv.network.ApiService;
 import com.fongmi.android.ltv.network.task.DownloadTask;
 import com.fongmi.android.ltv.receiver.VerifyReceiver;
-import com.fongmi.android.ltv.source.Force;
 import com.fongmi.android.ltv.source.TvBus;
 import com.fongmi.android.ltv.utils.FileUtil;
 import com.fongmi.android.ltv.utils.KeyDown;
@@ -48,7 +46,6 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 	@BindView(R.id.recyclerView) RecyclerView mRecyclerView;
 	@BindView(R.id.videoView) VideoView mVideoView;
 	@BindView(R.id.progress) ProgressBar mProgress;
-	@BindView(R.id.noise) AnalogTvNoise mNoise;
 	@BindView(R.id.number) TextView mNumber;
 	@BindView(R.id.info) ViewGroup mInfo;
 	@BindView(R.id.gear) ImageView mGear;
@@ -68,8 +65,6 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 		setContentView(R.layout.activity_main);
 		ButterKnife.bind(this);
 		Utils.setImmersiveMode(this);
-		Force.get().init();
-		TvBus.get().init();
 		initView();
 		initEvent();
 	}
@@ -77,10 +72,12 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 	private void initView() {
 		mHandler = new Handler();
 		mKeyDown = new KeyDown(this, mInfo, mNumber, mName);
-		mReceiver = VerifyReceiver.create(getVerifyCallback()).register(this);
+		mReceiver = VerifyReceiver.create(getCallback()).register(this);
+		TvBus.get().init();
 		setRecyclerView();
 		setCustomSize();
 		setScaleType();
+		showProgress();
 		Token.check();
 	}
 
@@ -97,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 		mRecyclerView.setAdapter(mAdapter);
 	}
 
-	private AsyncCallback getVerifyCallback() {
+	private AsyncCallback getCallback() {
 		return new AsyncCallback() {
 			@Override
 			public void onVerify() {
@@ -112,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 			public void onResponse(List<Channel> items) {
 				mKeyDown.setChannels(items);
 				mAdapter.addAll(items);
+				hideProgress();
 				checkKeep();
 			}
 		});
@@ -137,7 +135,6 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 		Token.setProvider(item);
 		showProgress();
 		getUrl(item);
-		hideError();
 	}
 
 	private void onPrepared() {
@@ -154,10 +151,10 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 	}
 
 	private void onError(Exception e) {
+		Notify.show(R.string.channel_error);
 		e.printStackTrace();
 		mVideoView.reset();
 		hideProgress();
-		showError();
 	}
 
 	private void playVideo(String url) {
@@ -199,14 +196,6 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 
 	private void hideProgress() {
 		if (mProgress.getVisibility() == View.VISIBLE) mProgress.setVisibility(View.GONE);
-	}
-
-	private void showError() {
-		if (mNoise.getVisibility() == View.GONE) mNoise.setVisibility(View.VISIBLE);
-	}
-
-	private void hideError() {
-		if (mNoise.getVisibility() == View.VISIBLE) mNoise.setVisibility(View.GONE);
 	}
 
 	private boolean isVisible() {
@@ -344,7 +333,5 @@ public class MainActivity extends AppCompatActivity implements KeyDownImpl {
 		super.onDestroy();
 		mReceiver.cancel(this);
 		TvBus.get().destroy();
-		Force.get().destroy();
-		System.exit(0);
 	}
 }
